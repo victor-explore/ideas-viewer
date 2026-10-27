@@ -1,0 +1,61 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Victor's Saved Ideas</title><style>
+body{margin:0;background:#0e1117;color:#e6e6e6;font-family:system-ui,sans-serif}
+header{position:sticky;top:0;z-index:9;background:#161b22;padding:12px 16px;border-bottom:1px solid #30363d;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+h1{font-size:18px;margin:0 12px 0 0}input{flex:1;min-width:200px;padding:8px;border-radius:8px;border:1px solid #30363d;background:#0d1117;color:#eee}
+button{background:#21262d;color:#ddd;border:1px solid #30363d;border-radius:16px;padding:5px 12px;cursor:pointer}button.on{background:#1f6feb;color:#fff}
+#count{color:#8b949e}#tagf{color:#f0883e;cursor:pointer}
+main{padding:16px}h2{border-bottom:1px solid #30363d;padding-bottom:6px;text-transform:capitalize}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px}
+.card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.card h3{margin:0;font-size:16px}.meta{font-size:12px;color:#8b949e}.chip{display:inline-block;background:#21262d;border-radius:10px;padding:2px 8px;margin:2px;font-size:11px;cursor:pointer}.chip:hover{background:#388bfd55}
+.st{background:#3fb95033;color:#3fb950;border-radius:6px;padding:1px 6px}
+iframe{width:340px;max-width:100%;height:600px;border:0;border-radius:8px;background:#000;align-self:center}
+a{color:#58a6ff}details{font-size:14px}details div{background:#0d1117;padding:8px;border-radius:8px;margin-top:6px}
+.tick{display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer}#login{max-width:520px;margin:60px auto;background:#161b22;padding:20px;border-radius:12px;border:1px solid #30363d}#login input{width:100%;box-sizing:border-box;margin:10px 0}.card.busy{opacity:.5}summary.arch{font-size:20px;cursor:pointer;margin:24px 0 8px}</style></head><body>
+<header><h1>💡 Saved Ideas</h1><input id="q" placeholder="Search title, tags, notes…"><span id="folders"></span><span id="tagf"></span><span id="count"></span><button id="out">Forget token</button></header><main id="m"></main>
+<script>const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function md(s){let h=esc(s);h=h.replace(/^### (.*)$/gm,'<h5>$1</h5>').replace(/^## (.*)$/gm,'<h4>$1</h4>').replace(/^# (.*)$/gm,'<h4>$1</h4>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g,'<a href="$2" target="_blank">$1</a>').replace(/^[-*] (.*)$/gm,'• $1');return h.split(/\n{2,}/).map(p=>'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('');}
+function embed(u){let m;if(m=u.match(/instagram\.com\/(reel|reels|p|tv)\/([\w-]+)/)){const k=m[1]==='p'?'p':'reel';return `<iframe loading="lazy" src="https://www.instagram.com/${k}/${m[2]}/embed" allowfullscreen></iframe>`}
+if(m=u.match(/(?:x|twitter)\.com\/\w+\/status\/(\d+)/))return `<blockquote class="twitter-tweet" data-theme="dark"><a href="https://twitter.com/i/status/${m[1]}"></a></blockquote>`;
+if(m=u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/))return `<iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/${m[1]}" allowfullscreen></iframe>`;return ''}
+
+const OWNER='victor-explore',REPO='agentic-os',BR='main';let D=[],F='all',T='';
+const tok=()=>localStorage.getItem('gh_tok');
+async function gh(path,opt={}){const r=await fetch('https://api.github.com'+path,{...opt,headers:{Authorization:'Bearer '+tok(),Accept:'application/vnd.github+json','Content-Type':'application/json'}});if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,200));return r.json()}
+function parse(path,text,oid){let fm={},body=text;const m=text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);if(m){body=m[2];for(const l of m[1].split('\n')){const i=l.indexOf(':');if(i>0)fm[l.slice(0,i).trim()]=l.slice(i+1).trim()}}
+const q=s=>s.replace(/^["']|["']$/g,'');const tags=(fm.tags||'').replace(/^\[|\]$/g,'').split(',').map(x=>q(x.trim())).filter(Boolean);
+let u=(fm.source||'').match(/https?:\/\/[^\s"')\]>]+/)||body.match(/https?:\/\/(?:www\.)?(?:instagram\.com|x\.com|twitter\.com|youtu)[^\s"')\]>]+/);const url=u?u[0].replace(/[.,]$/,''):'';
+const parts=path.split('/');const sm=body.match(/##\s*What it is\s*\n+([\s\S]+?)(\n\n|\n#|$)/);const summary=sm?sm[1].trim():(body.split('\n\n').find(p=>p.trim()&&!p.startsWith('#'))||'').trim();
+return {path,oid,text,folder:parts.length>2?parts[1]:'root',title:q(fm.title||parts.at(-1)),date:q(fm.date||''),status:q(fm.status||''),tags,url,summary,body}}
+async function load(){document.getElementById('m').innerHTML='<p>Loading from GitHub…</p>';
+const qry=`{repository(owner:"${OWNER}",name:"${REPO}"){object(expression:"${BR}:ideas"){...on Tree{entries{name type object{...on Blob{text oid}...on Tree{entries{name type object{...on Blob{text oid}}}}}}}}}}`;
+const r=await gh('/graphql',{method:'POST',body:JSON.stringify({query:qry})});if(r.errors)throw new Error(JSON.stringify(r.errors));
+D=[];for(const e of r.data.repository.object.entries){if(e.type==='blob'&&e.name.endsWith('.md')&&e.name.toLowerCase()!=='readme.md')D.push(parse('ideas/'+e.name,e.object.text,e.object.oid));
+if(e.type==='tree')for(const c of e.object.entries)if(c.type==='blob'&&c.name.endsWith('.md')&&c.name.toLowerCase()!=='readme.md')D.push(parse(`ideas/${e.name}/${c.name}`,c.object.text,c.object.oid))}
+D.sort((a,b)=>b.date.localeCompare(a.date));buildFolders();render()}
+const isArch=d=>/^(read|archived)$/i.test(d.status);
+function setStatus(text,st){const m=text.match(/^---\n([\s\S]*?)\n---/);if(!m)return `---\nstatus: ${st}\n---\n`+text;let fm=m[1];fm=/^status:.*$/m.test(fm)?fm.replace(/^status:.*$/m,'status: '+st):fm+'\nstatus: '+st;return '---\n'+fm+'\n---'+text.slice(m[0].length)}
+const b64=s=>{const b=new TextEncoder().encode(s);let x='';for(const c of b)x+=String.fromCharCode(c);return btoa(x)};
+async function toggle(path,on){const d=D.find(x=>x.path===path);const card=document.querySelector(`[data-p="${CSS.escape(path)}"]`);card&&card.classList.add('busy');
+try{const st=on?'archived':'raw';const nt=setStatus(d.text,st);const r=await gh(`/repos/${OWNER}/${REPO}/contents/${path.split('/').map(encodeURIComponent).join('/')}`,{method:'PUT',body:JSON.stringify({message:`${on?'Archive':'Unarchive'} idea: ${d.title}`.slice(0,120),content:b64(nt),sha:d.oid,branch:BR})});
+d.text=nt;d.oid=r.content.sha;d.status=st}catch(e){alert('Could not save: '+e.message+'\nTry reloading the page.')}render()}
+let folders=[];function buildFolders(){folders=['all',...new Set(D.map(d=>d.folder))];
+document.getElementById('folders').innerHTML=folders.map(f=>`<button data-f="${f}">${f}</button>`).join(' ');
+document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{F=b.dataset.f;render()})}
+const card=d=>`<div class="card" data-p="${esc(d.path)}"><label class="tick"><input type="checkbox" data-tick="${esc(d.path)}" ${isArch(d)?'checked':''}> Read / archive</label><h3>${esc(d.title)}</h3><div class="meta">${esc(d.date)} · ${esc(d.folder)} · <span class="st">${esc(d.status)}</span></div><div>${d.tags.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')}</div>${!isArch(d)&&d.url?embed(d.url):''}<div>${md(d.summary)}</div><details><summary>Full notes</summary><div>${md(d.body)}</div></details>${d.url?`<a href="${esc(d.url)}" target="_blank">Open source ↗</a>`:'<span class="meta">No source link</span>'}</div>`;
+function render(){const q=document.getElementById('q').value.toLowerCase();
+document.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===F));document.getElementById('tagf').textContent=T?`tag: ${T} ✕`:'';
+const L=D.filter(d=>(F==='all'||d.folder===F)&&(!T||d.tags.includes(T))&&(!q||(d.title+' '+d.tags.join(' ')+' '+d.body).toLowerCase().includes(q)));
+const A=L.filter(isArch),U=L.filter(d=>!isArch(d));document.getElementById('count').textContent=`${U.length} to read · ${D.filter(isArch).length} archived · ${D.length} total`;
+let h='';for(const f of folders.slice(1)){const g=U.filter(d=>d.folder===f);if(g.length)h+=`<h2>${esc(f.replace(/-/g,' '))} (${g.length})</h2><div class="grid">${g.map(card).join('')}</div>`}
+if(A.length)h+=`<details><summary class="arch">🗄 Archive (${A.length})</summary><div class="grid">${A.map(card).join('')}</div></details>`;
+document.getElementById('m').innerHTML=h||'<p>No matches.</p>';
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{T=c.dataset.t;render()});
+document.querySelectorAll('[data-tick]').forEach(c=>c.onchange=()=>toggle(c.dataset.tick,c.checked));
+if(window.twttr&&twttr.widgets)twttr.widgets.load()}
+function login(msg){document.getElementById('m').innerHTML=`<div id="login"><h3>Connect your GitHub</h3><p>${msg||''}Paste a fine-grained token with <b>Contents: Read and write</b> on <b>${OWNER}/${REPO}</b> only. It stays in this browser (localStorage) and is never sent anywhere except api.github.com.</p><input id="tk" type="password" placeholder="github_pat_…"><button id="go">Save & load</button></div>`;
+document.getElementById('go').onclick=()=>{localStorage.setItem('gh_tok',document.getElementById('tk').value.trim());start()}}
+async function start(){if(!tok())return login();try{await load()}catch(e){login('<span style="color:#f85149">Error: '+esc(e.message)+'</span><br>')}}
+document.getElementById('q').oninput=render;document.getElementById('tagf').onclick=()=>{T='';render()};
+document.getElementById('out').onclick=()=>{localStorage.removeItem('gh_tok');location.reload()};start();
+</script><script async src="https://platform.twitter.com/widgets.js"></script></body></html>
