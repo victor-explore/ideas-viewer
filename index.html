@@ -2,14 +2,14 @@
 :root{--fg:#000;--bg:#fff;--muted:#f2f2f2;--sub:#555;--accent:#ff3000}
 *{border-radius:0!important;box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,Helvetica,Arial,sans-serif;letter-spacing:-.011em;-webkit-font-smoothing:antialiased;background-image:linear-gradient(to right,rgb(0 0 0/.04) 1px,transparent 1px),linear-gradient(to bottom,rgb(0 0 0/.04) 1px,transparent 1px);background-size:24px 24px}
-header{position:sticky;top:0;z-index:9;background:var(--bg);padding:10px 16px;border-bottom:3px solid var(--fg);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+header{position:sticky;top:36px;z-index:9;background:var(--bg);padding:10px 16px;border-bottom:3px solid var(--fg);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 h1{font-size:18px;margin:0 12px 0 0;font-weight:900;letter-spacing:-.03em;text-transform:uppercase}
 input{flex:1;min-width:200px;height:36px;padding:0 10px;border:2px solid var(--fg);background:var(--bg);color:var(--fg);font:700 11px Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase}
 input:focus{outline:2px solid var(--accent);outline-offset:2px}
 button{height:36px;background:var(--bg);color:var(--fg);border:2px solid var(--fg);padding:0 12px;cursor:pointer;font:900 11px Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase}
 button:hover{background:var(--accent);border-color:var(--accent);color:#fff}button.on{background:var(--fg);color:var(--bg)}
-#folders{display:flex;flex-wrap:wrap;gap:6px}
-#count{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--sub)}
+#folders{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto;justify-content:flex-end}
+#strip{position:sticky;top:0;z-index:10;background:var(--fg);color:var(--bg);display:flex;align-items:stretch;justify-content:space-between;padding:0 16px}#count{display:flex}.cell{display:flex;align-items:center;gap:8px;height:36px;padding:0 16px;border-right:2px solid rgb(255 255 255/.3)}.cell:first-child{padding-left:0}.cell b{font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.cell span{font-size:15px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:0}#out{height:36px;border:0;border-left:2px solid rgb(255 255 255/.3);background:transparent;color:var(--bg)}#out:hover{background:rgb(255 255 255/.15);color:var(--bg)}
 #tagf{cursor:pointer;background:var(--accent);color:#fff;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;padding:0 6px}#tagf:empty{display:none}
 main{padding:16px}
 h2{font-size:14px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;border-bottom:3px solid var(--fg);padding-bottom:6px;margin:24px 0 12px}
@@ -26,13 +26,13 @@ a{color:var(--fg);font-size:10px;font-weight:900;letter-spacing:.2em;text-transf
 .card p a{font-size:inherit;letter-spacing:normal;text-transform:none;font-weight:700}
 details{font-size:12px}summary{cursor:pointer;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}details div{background:var(--muted);border:1px solid var(--fg);padding:8px;margin-top:6px}
 code{background:var(--muted);padding:0 3px}
-.tick{display:flex;gap:6px;align-items:center;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border-top:1px solid var(--fg);padding-top:6px;margin-top:auto}.tick input{min-width:0;flex:none;height:auto;accent-color:var(--accent)}
+.tick{display:flex;gap:6px;align-items:center;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border-bottom:1px solid var(--fg);padding-bottom:6px}.tick input{min-width:0;flex:none;height:auto;accent-color:var(--accent)}
 #login{max-width:520px;margin:60px auto;background:var(--bg);padding:20px;border:3px solid var(--fg)}#login h3{margin-top:0;font-weight:900;text-transform:uppercase;letter-spacing:-.03em}#login p{font-size:13px;line-height:1.5}#login input{width:100%;margin:10px 0;text-transform:none;letter-spacing:0}
 .card.busy{opacity:.5}
 summary.arch{font-size:14px;margin:28px 0 12px;border-bottom:3px solid var(--fg);padding-bottom:6px}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:var(--fg);border:3px solid var(--bg)}::-webkit-scrollbar-thumb:hover{background:var(--accent)}
 </style></head><body>
-<header><h1>Saved Ideas</h1><input id="q" placeholder="Search title, tags, notes…"><span id="folders"></span><span id="tagf"></span><span id="count"></span><button id="out">Forget token</button></header><main id="m"></main>
+<div id="strip"><div id="count"></div><button id="out">Forget token</button></div><header><h1>Saved Ideas</h1><span id="folders"></span><span id="tagf"></span></header><main id="m"></main>
 <script>const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function md(s){let h=esc(s);h=h.replace(/^### (.*)$/gm,'<h5>$1</h5>').replace(/^## (.*)$/gm,'<h4>$1</h4>').replace(/^# (.*)$/gm,'<h4>$1</h4>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g,'<a href="$2" target="_blank">$1</a>').replace(/^[-*] (.*)$/gm,'• $1');return h.split(/\n{2,}/).map(p=>'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('');}
 function embed(u){let m;if(m=u.match(/instagram\.com\/(reel|reels|p|tv)\/([\w-]+)/)){const k=m[1]==='p'?'p':'reel';return `<iframe loading="lazy" src="https://www.instagram.com/${k}/${m[2]}/embed" allowfullscreen></iframe>`}
@@ -62,12 +62,12 @@ d.text=nt;d.oid=r.content.sha;d.status=st}catch(e){alert('Could not save: '+e.me
 let folders=[];function buildFolders(){folders=['all',...new Set(D.map(d=>d.folder))];
 document.getElementById('folders').innerHTML=folders.map(f=>`<button data-f="${f}">${f.replace(/-/g,' ')}</button>`).join(' ');
 document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{F=b.dataset.f;render()})}
-const card=d=>`<div class="card" data-p="${esc(d.path)}">${!isArch(d)&&d.url?embed(d.url):''}<h3>${esc(d.title)}</h3><div class="meta">${esc(d.date)} · ${esc(d.folder.replace(/-/g,' '))} · <span class="st">${esc(d.status)}</span></div><div>${d.tags.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')}</div><div>${md(d.summary)}</div><details><summary>Full notes</summary><div>${md(d.body)}</div></details>${d.url?`<a href="${esc(d.url)}" target="_blank">Open source ↗</a>`:'<span class="meta">No source link</span>'}<label class="tick"><input type="checkbox" data-tick="${esc(d.path)}" ${isArch(d)?'checked':''}> Read / archive</label></div>`;
-function render(){const q=document.getElementById('q').value.toLowerCase();
+const card=d=>`<div class="card" data-p="${esc(d.path)}"><label class="tick"><input type="checkbox" data-tick="${esc(d.path)}" ${isArch(d)?'checked':''}> Archive</label>${!isArch(d)&&d.url?embed(d.url):''}<h3>${esc(d.title)}</h3><div class="meta">${esc(d.date)} · ${esc(d.folder.replace(/-/g,' '))} · <span class="st">${esc(d.status)}</span></div><div>${d.tags.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')}</div><div>${md(d.summary)}</div><details><summary>Full notes</summary><div>${md(d.body)}</div></details>${d.url?`<a href="${esc(d.url)}" target="_blank">Open source ↗</a>`:'<span class="meta">No source link</span>'}</div>`;
+function render(){
 document.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===F));document.getElementById('tagf').textContent=T?`tag: ${T} ✕`:'';
-const L=D.filter(d=>(F==='all'||d.folder===F)&&(!T||d.tags.includes(T))&&(!q||(d.title+' '+d.tags.join(' ')+' '+d.body).toLowerCase().includes(q)));
-const A=L.filter(isArch),U=L.filter(d=>!isArch(d));document.getElementById('count').textContent=`${U.length} to read · ${D.filter(isArch).length} archived · ${D.length} total`;
-let h='';for(const f of folders.slice(1)){const g=U.filter(d=>d.folder===f);if(g.length)h+=`<h2>${esc(f.replace(/-/g,' '))} (${g.length})</h2><div class="grid">${g.map(card).join('')}</div>`}
+const L=D.filter(d=>(F==='all'||d.folder===F)&&(!T||d.tags.includes(T)));
+const A=L.filter(isArch),U=L.filter(d=>!isArch(d));document.getElementById('count').innerHTML=[['To read',D.filter(d=>!isArch(d)).length],['Archived',D.filter(isArch).length],['Total',D.length]].map(([k,n])=>`<div class="cell"><b>${k}</b><span>${n}</span></div>`).join('');
+let h='';for(const f of folders.slice(1)){const g=U.filter(d=>d.folder===f);if(g.length)h+=`${F==='all'?`<h2>${esc(f.replace(/-/g,' '))} (${g.length})</h2>`:''}<div class="grid">${g.map(card).join('')}</div>`}
 if(A.length)h+=`<details><summary class="arch">Archive (${A.length})</summary><div class="grid">${A.map(card).join('')}</div></details>`;
 document.getElementById('m').innerHTML=h||'<p>No matches.</p>';
 document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{T=c.dataset.t;render()});
@@ -76,6 +76,6 @@ if(window.twttr&&twttr.widgets)twttr.widgets.load()}
 function login(msg){document.getElementById('m').innerHTML=`<div id="login"><h3>Connect your GitHub</h3><p>${msg||''}Paste a fine-grained token with <b>Contents: Read and write</b> on <b>${OWNER}/${REPO}</b> only. It stays in this browser (localStorage) and is never sent anywhere except api.github.com.</p><input id="tk" type="password" placeholder="github_pat_…"><button id="go">Save & load</button></div>`;
 document.getElementById('go').onclick=()=>{localStorage.setItem('gh_tok',document.getElementById('tk').value.trim());start()}}
 async function start(){if(!tok())return login();try{await load()}catch(e){login('<span style="color:#ff3000">Error: '+esc(e.message)+'</span><br>')}}
-document.getElementById('q').oninput=render;document.getElementById('tagf').onclick=()=>{T='';render()};
+document.getElementById('tagf').onclick=()=>{T='';render()};
 document.getElementById('out').onclick=()=>{localStorage.removeItem('gh_tok');location.reload()};start();
 </script><script async src="https://platform.twitter.com/widgets.js"></script></body></html>
