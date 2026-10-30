@@ -24,7 +24,7 @@ iframe{width:100%;aspect-ratio:9/16;height:auto;border:2px solid var(--fg);backg
 .card p{margin:0;font-size:12px;line-height:1.4;color:#222}
 a{color:var(--fg);font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;border-bottom:2px solid var(--accent);align-self:flex-start}a:hover{color:var(--accent)}
 .card p a{font-size:inherit;letter-spacing:normal;text-transform:none;font-weight:700}
-details{font-size:12px}summary{cursor:pointer;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}details div{background:var(--muted);border:1px solid var(--fg);padding:8px;margin-top:6px}
+details{font-size:12px}summary{cursor:pointer;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.card details div{background:var(--muted);border:1px solid var(--fg);padding:8px;margin-top:6px}
 code{background:var(--muted);padding:0 3px}
 .tick{display:flex;gap:6px;align-items:center;font-size:10px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border-bottom:1px solid var(--fg);padding-bottom:6px}.tick input{min-width:0;flex:none;height:auto;accent-color:var(--accent)}
 #login{max-width:520px;margin:60px auto;background:var(--bg);padding:20px;border:3px solid var(--fg)}#login h3{margin-top:0;font-weight:900;text-transform:uppercase;letter-spacing:-.03em}#login p{font-size:13px;line-height:1.5}#login input{width:100%;margin:10px 0;text-transform:none;letter-spacing:0}
@@ -62,16 +62,17 @@ d.text=nt;d.oid=r.content.sha;d.status=st}catch(e){alert('Could not save: '+e.me
 let folders=[];function buildFolders(){folders=['all',...new Set(D.map(d=>d.folder))];
 document.getElementById('folders').innerHTML=folders.map(f=>`<button data-f="${f}">${f.replace(/-/g,' ')}</button>`).join(' ');
 document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{F=b.dataset.f;render()})}
-const card=d=>`<div class="card" data-p="${esc(d.path)}"><label class="tick"><input type="checkbox" data-tick="${esc(d.path)}" ${isArch(d)?'checked':''}> Archive</label>${!isArch(d)&&d.url?embed(d.url):''}<h3>${esc(d.title)}</h3><div class="meta">${esc(d.date)} · ${esc(d.folder.replace(/-/g,' '))} · <span class="st">${esc(d.status)}</span></div><div>${d.tags.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')}</div><div>${md(d.summary)}</div><details><summary>Full notes</summary><div>${md(d.body)}</div></details>${d.url?`<a href="${esc(d.url)}" target="_blank">Open source ↗</a>`:'<span class="meta">No source link</span>'}</div>`;
+const card=d=>`<div class="card" data-p="${esc(d.path)}"><label class="tick"><input type="checkbox" data-tick="${esc(d.path)}" ${isArch(d)?'checked':''}> Archive</label>${d.url?embed(d.url):''}<h3>${esc(d.title)}</h3><div class="meta">${esc(d.date)} · ${esc(d.folder.replace(/-/g,' '))} · <span class="st">${esc(d.status)}</span></div><div>${d.tags.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)}</span>`).join('')}</div><div>${md(d.summary)}</div><details><summary>Full notes</summary><div>${md(d.body)}</div></details>${d.url?`<a href="${esc(d.url)}" target="_blank">Open source ↗</a>`:'<span class="meta">No source link</span>'}</div>`;
 function render(){
 document.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===F));document.getElementById('tagf').textContent=T?`tag: ${T} ✕`:'';
 const L=D.filter(d=>(F==='all'||d.folder===F)&&(!T||d.tags.includes(T)));
 const A=L.filter(isArch),U=L.filter(d=>!isArch(d));document.getElementById('count').innerHTML=[['To read',D.filter(d=>!isArch(d)).length],['Archived',D.filter(isArch).length],['Total',D.length]].map(([k,n])=>`<div class="cell"><b>${k}</b><span>${n}</span></div>`).join('');
 let h='';for(const f of folders.slice(1)){const g=U.filter(d=>d.folder===f);if(g.length)h+=`${F==='all'?`<h2>${esc(f.replace(/-/g,' '))} (${g.length})</h2>`:''}<div class="grid">${g.map(card).join('')}</div>`}
-if(A.length)h+=`<details><summary class="arch">Archive (${A.length})</summary><div class="grid">${A.map(card).join('')}</div></details>`;
+if(A.length)h+=`<details id="arch"><summary class="arch">Archive (${A.length})</summary><div class="grid">${A.map(card).join('')}</div></details>`;
 document.getElementById('m').innerHTML=h||'<p>No matches.</p>';
 document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{T=c.dataset.t;render()});
 document.querySelectorAll('[data-tick]').forEach(c=>c.onchange=()=>toggle(c.dataset.tick,c.checked));
+const ar=document.getElementById('arch');if(ar)ar.ontoggle=()=>{if(ar.open&&window.twttr&&twttr.widgets)twttr.widgets.load(ar)};
 if(window.twttr&&twttr.widgets)twttr.widgets.load()}
 function login(msg){document.getElementById('m').innerHTML=`<div id="login"><h3>Connect your GitHub</h3><p>${msg||''}Paste a fine-grained token with <b>Contents: Read and write</b> on <b>${OWNER}/${REPO}</b> only. It stays in this browser (localStorage) and is never sent anywhere except api.github.com.</p><input id="tk" type="password" placeholder="github_pat_…"><button id="go">Save & load</button></div>`;
 document.getElementById('go').onclick=()=>{localStorage.setItem('gh_tok',document.getElementById('tk').value.trim());start()}}
