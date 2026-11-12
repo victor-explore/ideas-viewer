@@ -39,7 +39,7 @@ function embed(u){let m;if(m=u.match(/instagram\.com\/(reel|reels|p|tv)\/([\w-]+
 if(m=u.match(/(?:x|twitter)\.com\/\w+\/status\/(\d+)/))return `<blockquote class="twitter-tweet" data-theme="light"><a href="https://twitter.com/i/status/${m[1]}"></a></blockquote>`;
 if(m=u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/))return `<iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/${m[1]}" allowfullscreen></iframe>`;return ''}
 
-const OWNER='victor-explore',REPO='agentic-os',BR='main';let D=[],F='all',T='';
+const OWNER='victor-explore',REPO='ideas',BR='main';let D=[],F='all',T='';
 const tok=()=>localStorage.getItem('gh_tok');
 async function gh(path,opt={}){const r=await fetch('https://api.github.com'+path,{...opt,headers:{Authorization:'Bearer '+tok(),Accept:'application/vnd.github+json','Content-Type':'application/json'}});if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,200));return r.json()}
 function parse(path,text,oid){let fm={},body=text;const m=text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);if(m){body=m[2];for(const l of m[1].split('\n')){const i=l.indexOf(':');if(i>0)fm[l.slice(0,i).trim()]=l.slice(i+1).trim()}}
