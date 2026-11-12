@@ -58,7 +58,10 @@ function setStatus(text,st){const m=text.match(/^---\n([\s\S]*?)\n---/);if(!m)re
 const b64=s=>{const b=new TextEncoder().encode(s);let x='';for(const c of b)x+=String.fromCharCode(c);return btoa(x)};
 async function toggle(path,on){const d=D.find(x=>x.path===path);const card=document.querySelector(`[data-p="${CSS.escape(path)}"]`);card&&card.classList.add('busy');
 try{const st=on?'archived':'raw';const nt=setStatus(d.text,st);const r=await gh(`/repos/${OWNER}/${REPO}/contents/${path.split('/').map(encodeURIComponent).join('/')}`,{method:'PUT',body:JSON.stringify({message:`${on?'Archive':'Unarchive'} idea: ${d.title}`.slice(0,120),content:b64(nt),sha:d.oid,branch:BR})});
-d.text=nt;d.oid=r.content.sha;d.status=st}catch(e){alert('Could not save: '+e.message+'\nTry reloading the page.')}render()}
+d.text=nt;d.oid=r.content.sha;d.status=st;card?place(d,card):render()}catch(e){alert('Could not save: '+e.message+'\nTry reloading the page.');if(card){card.classList.remove('busy');const t=card.querySelector('[data-tick]');if(t)t.checked=!on}}}
+function place(d,el){const g=document.querySelector(`[data-g="${CSS.escape(isArch(d)?'__arch':d.folder)}"]`);if(!g)return render();el.classList.remove('busy');el.querySelector('.st').textContent=d.status;g.prepend(el);heads()}
+function counts(){document.getElementById('count').innerHTML=[['To read',D.filter(d=>!isArch(d)).length],['Archived',D.filter(isArch).length],['Total',D.length]].map(([k,n])=>`<div class="cell"><b>${k}</b><span>${n}</span></div>`).join('')}
+function heads(){counts();const L=D.filter(d=>(F==='all'||d.folder===F)&&(!T||d.tags.includes(T)));document.querySelectorAll('[data-h]').forEach(x=>{const k=x.dataset.h,a=k==='__arch';const n=a?L.filter(isArch).length:L.filter(d=>!isArch(d)&&d.folder===k).length;x.textContent=(a?'Archive':k.replace(/-/g,' '))+` (${n})`;if(!a)x.style.display=n?'':'none'})}
 let folders=[];function buildFolders(){folders=['all',...new Set(D.map(d=>d.folder))];
 document.getElementById('folders').innerHTML=folders.map(f=>`<button data-f="${f}">${f.replace(/-/g,' ')}</button>`).join(' ');
 document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{F=b.dataset.f;render()})}
@@ -66,9 +69,9 @@ const card=d=>`<div class="card" data-p="${esc(d.path)}"><label class="tick"><in
 function render(){
 document.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===F));document.getElementById('tagf').textContent=T?`tag: ${T} ✕`:'';
 const L=D.filter(d=>(F==='all'||d.folder===F)&&(!T||d.tags.includes(T)));
-const A=L.filter(isArch),U=L.filter(d=>!isArch(d));document.getElementById('count').innerHTML=[['To read',D.filter(d=>!isArch(d)).length],['Archived',D.filter(isArch).length],['Total',D.length]].map(([k,n])=>`<div class="cell"><b>${k}</b><span>${n}</span></div>`).join('');
-let h='';for(const f of folders.slice(1)){const g=U.filter(d=>d.folder===f);if(g.length)h+=`${F==='all'?`<h2>${esc(f.replace(/-/g,' '))} (${g.length})</h2>`:''}<div class="grid">${g.map(card).join('')}</div>`}
-if(A.length)h+=`<details id="arch"><summary class="arch">Archive (${A.length})</summary><div class="grid">${A.map(card).join('')}</div></details>`;
+const A=L.filter(isArch),U=L.filter(d=>!isArch(d));counts();
+let h='';for(const f of folders.slice(1)){const g=U.filter(d=>d.folder===f);if(g.length)h+=`${F==='all'?`<h2 data-h="${esc(f)}">${esc(f.replace(/-/g,' '))} (${g.length})</h2>`:''}<div class="grid" data-g="${esc(f)}">${g.map(card).join('')}</div>`}
+if(A.length)h+=`<details id="arch"><summary class="arch" data-h="__arch">Archive (${A.length})</summary><div class="grid" data-g="__arch">${A.map(card).join('')}</div></details>`;
 document.getElementById('m').innerHTML=h||'<p>No matches.</p>';
 document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{T=c.dataset.t;render()});
 document.querySelectorAll('[data-tick]').forEach(c=>c.onchange=()=>toggle(c.dataset.tick,c.checked));
